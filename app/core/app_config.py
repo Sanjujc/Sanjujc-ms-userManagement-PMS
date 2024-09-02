@@ -6,4 +6,7 @@ import os
 load_dotenv()
 
 #Server Details
-port_number = os.getenv('PORT')
+PORT_NUMBER = os.getenv('PORT')
+
+#Postgres
+DATABASE_URL = os.getenv('DATABASE_URL')

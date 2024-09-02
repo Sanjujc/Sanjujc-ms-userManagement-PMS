@@ -1,10 +1,14 @@
 import datetime
 import uuid
 
-from sqlalchemy import String, ForeignKey, UUID, DateTime
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy import create_engine, Integer, String, UUID, DateTime
+from sqlalchemy.orm import sessionmaker, declarative_base, mapped_column, Mapped
 
-from app.db.base import Base
+DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost/pms_db"
+
+engine = create_engine(DATABASE_URL, echo=True)  # echo=True for SQL logging
+
+Base = declarative_base()
 
 class UserClass(Base):
     __tablename__ = "userDetails"
@@ -17,3 +21,7 @@ class UserClass(Base):
     created_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
     updated_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow,
                                                             onupdate=datetime.datetime.utcnow)
+
+
+Base.metadata.create_all(bind=engine)  # This should create the table
+
