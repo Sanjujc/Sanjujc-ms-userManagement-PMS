@@ -3,22 +3,26 @@ from loguru import logger
 from fastapi import FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.db.base import Base
-from app.db.models import UserClass
+from app.api.v1.endpoints.role_routes import role_routes
+from app.api.v1.endpoints.user_routes import user_routes
 
-DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost/pms_db"
+from app.db.session import init_db
 
-engine = create_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info('Initiating FastAPI startup')
-    Base.metadata.create_all(bind=engine)  # Create tables on startup
-    yield
-    logger.info('Closing FastAPI application')
+async def lifespan(application: FastAPI):
+    try:
+        logger.info('Initiating FastAPI startup', application)
+        init_db()
+        yield
+    finally:
+        logger.info('Closing FastAPI application')
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(role_routes)
+app.include_router(user_routes)
+
 
 @app.get('/')
 def welcome_application():
