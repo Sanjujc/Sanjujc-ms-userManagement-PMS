@@ -16,6 +16,8 @@ async def lifespan(application: FastAPI):
     finally:
         logger.info('Closing FastAPI application')
 
+
+
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(role_routes)
