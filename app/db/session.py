@@ -1,5 +1,5 @@
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, insert
+from sqlalchemy import create_engine, insert, select
 
 from app.core.permission import permissions
 from app.db.base import Base
@@ -22,5 +22,11 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     admin_user = (insert(RoleDetails).values(role='admin', permission=permissions))
     with engine.connect() as conn:
-        conn.execute(admin_user)
-        conn.commit()
+        check_admin = select(RoleDetails).where(RoleDetails.role == "admin")
+        admin_details =  conn.execute(check_admin)
+        if not admin_details:
+            conn.execute(admin_user)
+            conn.commit()
+            print("Admin role created successfully.")
+        else:
+            print("Admin role already exists.")
