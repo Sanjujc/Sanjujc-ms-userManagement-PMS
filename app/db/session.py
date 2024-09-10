@@ -23,7 +23,7 @@ def init_db():
     admin_user = (insert(RoleDetails).values(role='admin', permission=permissions))
     with engine.connect() as conn:
         check_admin = select(RoleDetails).where(RoleDetails.role == "admin")
-        admin_details =  conn.execute(check_admin)
+        admin_details =  conn.execute(check_admin).first()
         if not admin_details:
             conn.execute(admin_user)
             conn.commit()

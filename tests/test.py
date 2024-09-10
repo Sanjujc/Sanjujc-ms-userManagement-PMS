@@ -1,27 +1,56 @@
-import datetime
-import uuid
+def findOptimalResources(arr, k):
+    n = len(arr)
 
-from sqlalchemy import create_engine, Integer, String, UUID, DateTime
-from sqlalchemy.orm import sessionmaker, declarative_base, mapped_column, Mapped
+    # Edge case: if k is greater than the length of the array
+    if k > n:
+        return -1
 
-DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost/pms_db"
+    max_sum = -1
+    current_sum = 0
+    count_map = {}
 
-engine = create_engine(DATABASE_URL, echo=True)  # echo=True for SQL logging
+    # Initialize the sliding window
+    for i in range(k):
+        if arr[i] in count_map:
+            count_map[arr[i]] += 1
+        else:
+            count_map[arr[i]] = 1
+        current_sum += arr[i]
 
-Base = declarative_base()
+    # Check if the initial window is valid
+    if len(count_map) == k:
+        max_sum = current_sum
 
-class UserClass(Base):
-    __tablename__ = "userDetails"
+    # Slide the window across the array
+    for i in range(k, n):
+        # Remove the element going out of the window
+        element_out = arr[i - k]
+        count_map[element_out] -= 1
+        current_sum -= element_out
 
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_name: Mapped[str] = mapped_column(String(50), nullable=False)
-    email: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    hashed_password: Mapped[str] = mapped_column(String(50), nullable=False)
-    # role_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('role_details.role_id'), nullable=False)
-    created_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
-    updated_time: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow,
-                                                            onupdate=datetime.datetime.utcnow)
+        if count_map[element_out] == 0:
+            del count_map[element_out]
+
+        # Add the new element coming into the window
+        element_in = arr[i]
+        if element_in in count_map:
+            count_map[element_in] += 1
+        else:
+            count_map[element_in] = 1
+        current_sum += element_in
+
+        # Check if the current window is valid
+        if len(count_map) == k:
+            max_sum = max(max_sum, current_sum)
+
+    return max_sum if max_sum != -1 else -1
 
 
-Base.metadata.create_all(bind=engine)  # This should create the table
+# Sample usage
+arr1 = [1, 2, 7, 7, 4, 3, 6]
+k1 = 3
+print(findOptimalResources(arr1, k1))  # Output should be 14
 
+arr2 = [1, 3, 3, 1]
+k2 = 3
+print(findOptimalResources(arr2, k2))  # Output should be -1
