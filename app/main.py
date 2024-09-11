@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi import FastAPI
+
+from app.api.v1.endpoints.login_routes import login_routes
 from app.api.v1.endpoints.role_routes import role_routes
 from app.api.v1.endpoints.user_routes import user_routes
 
@@ -22,7 +24,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(role_routes)
 app.include_router(user_routes)
-
+app.include_router(login_routes)
 
 @app.get('/')
 def welcome_application():
