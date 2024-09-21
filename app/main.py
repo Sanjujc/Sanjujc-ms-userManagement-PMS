@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi import FastAPI
-
+import uvicorn
 from app.api.v1.endpoints.login_routes import login_routes
 from app.api.v1.endpoints.role_routes import role_routes
 from app.api.v1.endpoints.user_routes import user_routes
@@ -31,5 +31,4 @@ def welcome_application():
     return 'Welcome to the User-management Microservice'
 
 if __name__ == '__main__':
-    import uvicorn
     uvicorn.run(app, host='localhost', port=1234)

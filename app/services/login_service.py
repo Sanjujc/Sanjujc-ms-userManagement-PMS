@@ -29,7 +29,8 @@ class LoginService:
             logger.error(f'Error occurred while checking constraints: {e}')
             raise e
 
-    def authenticate_password(self):
+    @staticmethod
+    def authenticate_password(user_password,user_details):
         try:
             pass
         except Exception as e:
@@ -44,6 +45,7 @@ class LoginService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=LoginResponseMessage.user_name
                 )
+            authenticate_password  = LoginService().authenticate_password(user_password,user_details)
             return user_details
         except HTTPException as http:
             raise http
