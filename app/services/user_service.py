@@ -6,7 +6,7 @@ import bcrypt
 from starlette import status
 
 from app.api.v1.models.user_model import ResponseUserRegistration
-from app.constant import ResponseMessage
+from app.constant import UserResponseMessage
 from app.db.models import UserClass, RoleDetails
 import re
 
@@ -49,40 +49,50 @@ class UserService:
         logger.info(f'Checking constraints: looking for {key_check} in column {table_col}')
         try:
             check_exist = db_session.query(UserClass).filter(table_col == key_check).first()
-            return check_exist is  None
+            if check_exist:
+                logger.info(f'{key_check} already present')
+                return True
+            return False
         except Exception as e:
             logger.error(f'Error occurred while checking constraints: {e}')
             raise e
+
     @staticmethod
     def user_registration(user_name, email, role_id, password, db_session):
         try:
-            if UserService().check_constrains(user_name,UserClass.user_name,db_session):
-                return HTTPException(
+            if UserService().check_constrains(user_name, UserClass.user_name, db_session):
+                raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=ResponseMessage.user_name_exist
+                    detail=UserResponseMessage.user_name_exist
                 )
-            if UserService().check_constrains(email,UserClass.email,db_session):
-                return HTTPException(
+            if UserService().check_constrains(email, UserClass.email, db_session):
+                raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=ResponseMessage.email_exist
+                    detail=UserResponseMessage.email_exist
                 )
             user_email_validation = UserService().email_validation(email)
             if not user_email_validation:
-                return HTTPException(
+                raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=ResponseMessage.user_registration_email_validation_failed
+                    detail=UserResponseMessage.user_registration_email_validation_failed
                 )
             role_details = db_session.query(RoleDetails).filter(RoleDetails.role_id == role_id).first()
             if not role_details:
-                return HTTPException(
+                raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Role not found"
                 )
+
+            # Here you call the hash_password method
             hashed_password = UserService().hash_password(password)
-            new_user = UserClass(user_name=user_name,email=email,role_id=role_id,hashed_password=hashed_password)
+            new_user = UserClass(user_name=user_name, email=email, role_id=role_id,
+                                 hashed_password=hashed_password.decode('utf-8'))
             db_session.add(new_user)
             db_session.commit()
-            return ResponseUserRegistration(user_name=user_name,status=ResponseMessage.user_registration_success)
+            return ResponseUserRegistration(user_name=user_name, status=UserResponseMessage.user_registration_success)
+        except HTTPException as http_exc:
+            logger.error(f"HTTPException occurred during user registration: {http_exc.detail}")
+            raise http_exc
         except Exception as e:
             db_session.rollback()
             raise HTTPException(

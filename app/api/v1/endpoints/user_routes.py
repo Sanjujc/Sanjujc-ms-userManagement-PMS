@@ -19,9 +19,13 @@ def user_registration(user_details:UserRegistrationDetails,db:Session=Depends(ge
         role_id = user_details.role_id
         hashed_password = user_details.hashed_password
         final_json = UserService().user_registration(user_name,email,role_id,hashed_password,db)
-        return final_json
+        if final_json :
+            return final_json
+    except HTTPException as http_exc:
+        logger.error(f"HTTPException occurred: {http_exc.detail}")
+        raise http_exc
     except Exception as e:
         logger.error('Error registering user',e)
         logger.error(traceback.print_exc())
-        HTTPException(status_code=500,detail='Internal server Error')
+        raise HTTPException(status_code=500,detail='Internal server Error')
 
