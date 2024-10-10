@@ -56,15 +56,16 @@ class UserService:
         except Exception as e:
             logger.error(f'Error occurred while checking constraints: {e}')
             raise e
+
     @staticmethod
     def user_registration(user_name, email, role_id, password, db_session):
         try:
-            if UserService().check_constrains(user_name,UserClass.user_name,db_session):
+            if UserService().check_constrains(user_name, UserClass.user_name, db_session):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=UserResponseMessage.user_name_exist
                 )
-            if  UserService().check_constrains(email,UserClass.email,db_session):
+            if UserService().check_constrains(email, UserClass.email, db_session):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=UserResponseMessage.email_exist
@@ -81,8 +82,11 @@ class UserService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Role not found"
                 )
+
+            # Here you call the hash_password method
             hashed_password = UserService().hash_password(password)
-            new_user = UserClass(user_name=user_name,email=email,role_id=role_id,hashed_password=hashed_password)
+            new_user = UserClass(user_name=user_name, email=email, role_id=role_id,
+                                 hashed_password=hashed_password.decode('utf-8'))
             db_session.add(new_user)
             db_session.commit()
             return ResponseUserRegistration(user_name=user_name, status=UserResponseMessage.user_registration_success)

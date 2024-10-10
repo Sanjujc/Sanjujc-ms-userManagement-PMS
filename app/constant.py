@@ -11,3 +11,5 @@ class UserResponseMessage:
 
 class LoginResponseMessage:
     user_name = 'Invalid user name'
+    user_not_found = 'User not found'
+    invalid_credentials = 'Invalid Credential'

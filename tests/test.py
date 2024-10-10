@@ -1,21 +1,26 @@
-def cardPackets(cardTypes):
-    n = len(cardTypes)
-    min_additional_cards = float('inf')  # Initialize with a large number
+from fastapi import FastAPI, Query
+from pydantic import BaseModel
+import uvicorn
 
-    for packets in range(2, max(cardTypes) + 1):  # Start from 2 packets
-        additional_cards = 0
+app = FastAPI()
 
-        for cards in cardTypes:
-            remainder = cards % packets
-            if remainder != 0:
-                additional_cards += (packets - remainder)
+class Item(BaseModel):
+    item_id: int
+    name: str = "sanju"
+    price: float = None
 
-        min_additional_cards = min(min_additional_cards, additional_cards)
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to FastAPI!"}
 
-    return min_additional_cards
+@app.get("/items/")
+def read_item(
+    item_id: int = Query(..., description="The ID of the item"),
+    name: str = Query("sanju", max_length=50, description="The name of the item"),
+    price: float = Query(None, gt=0, description="The price of the item")
+):
+    item = Item(item_id=item_id, name=name, price=price)
+    return item
 
-
-# Sample Input
-cardTypes = [3, 8, 7, 6, 4]
-
-print(cardPackets(cardTypes))  # Output should be 2
+if __name__ == "__main__":
+    uvicorn.run(app, host='localhost', port=1234)
