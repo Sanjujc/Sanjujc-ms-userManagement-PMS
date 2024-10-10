@@ -19,7 +19,7 @@ def read_item(
     name: str = Query("sanju", max_length=50, description="The name of the item"),
     price: float = Query(None, gt=0, description="The price of the item")
 ):
-    item = Item(item_id=item_id, name=name, price=price)
+    item = Item(item_id= item_id, name=name, price=price)
     return item
 
 if __name__ == "__main__":
